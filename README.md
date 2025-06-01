@@ -24,9 +24,8 @@ The app is built with Flask, and is based on the LDBC Social Network Benchmark (
   - MongoDB (document store)
   - Neo4j (graph database)
 - Frontend: HTML, Jinja2, Chart.js
-- Other Tools: Docker, PyMongo, neo4j-driver, dateutil
 
- Dataset Preparation
+Dataset Preparation
 ----------------------
 
 **LDBC SNB Dataset**
@@ -67,10 +66,7 @@ The app is built with Flask, and is based on the LDBC Social Network Benchmark (
 Then visit http://localhost:5050 in your browser.
 
 
-
-
-
- Folder Structure
+Folder Structure
 -------------------
 ├── app.py  
 ├── clean_and_import.py  
