@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">🧑‍🤝‍🧑 Forum Explorer</h2>
+<p class="text-muted">
+  This query uses <strong>Neo4j</strong> to find all forums a person belongs to via the <code>MEMBER_OF</code> relationship, 
+  and then queries <strong>MongoDB</strong> to retrieve each forum’s title, creation date, and moderator. 
+  The results are shown below, along with a pie chart breakdown by forum type.
+</p>
+
+<!-- Search Form -->
+<form method="get" action="/lookup/forums" class="row g-3 mb-4">
+  <div class="col-auto">
+    <input type="number" class="form-control" name="person_id" placeholder="Enter Person ID" required>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Explore</button>
+  </div>
+</form>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3" id="forumTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab">📋 Data</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab">📊 Chart</button>
+  </li>
+</ul>
+
+<div class="tab-content" id="forumTabsContent">
+
+  <!-- 📋 Data Tab -->
+  <div class="tab-pane fade show active" id="data" role="tabpanel" aria-labelledby="data-tab">
+    {% if message %}
+      <div class="alert alert-warning">{{ message }}</div>
+    {% endif %}
+
+    {% if forums %}
+      <h5>Forums for Person ID <strong>{{ person_id }}</strong></h5>
+      <div class="row">
+        {% for forum in forums %}
+        <div class="col-md-6">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">{{ forum.title }}</h5>
+              <h6 class="card-subtitle mb-2 text-muted">Forum ID: {{ forum.id }}</h6>
+              <p class="card-text">
+                Created on: {{ forum.creationDate | datetimeformat }}<br>
+                Moderator: {{ forum.moderatorName or ("Person " ~ forum.ModeratorPersonId) }}
+
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- 📊 Chart Tab -->
+  <div class="tab-pane fade" id="chart" role="tabpanel" aria-labelledby="chart-tab">
+    {% if forums %}
+      <h5 class="mt-4">Forum Types</h5>
+      <canvas
+        id="forumChart"
+        height="60"
+        data-titles='{{ forums | map(attribute="title") | list | tojson | safe }}'>
+      </canvas>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          const canvas = document.getElementById("forumChart");
+          if (!canvas) return;
+
+          const rawTitles = JSON.parse(canvas.dataset.titles || "[]");
+
+          const typeCount = {
+            Wall: 0,
+            Album: 0,
+            Group: 0,
+            Other: 0
+          };
+
+          rawTitles.forEach(title => {
+            if (title.startsWith("Wall")) typeCount.Wall++;
+            else if (title.startsWith("Album")) typeCount.Album++;
+            else if (title.startsWith("Group")) typeCount.Group++;
+            else typeCount.Other++;
+          });
+
+          const labels = Object.keys(typeCount);
+          const values = Object.values(typeCount);
+
+          new Chart(canvas.getContext("2d"), {
+            type: 'pie',
+            data: {
+              labels: labels,
+              datasets: [{
+                data: values,
+                backgroundColor: [
+                  '#1DA1F2',
+                  '#FF6384',
+                  '#FFCE56',
+                  '#BDBDBD'
+                ]
+              }]
+            },
+            options: {
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Forum Type Distribution'
+                }
+              }
+            }
+          });
+        });
+      </script>
+    {% else %}
+      <p class="text-muted mt-4">No chart data available.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

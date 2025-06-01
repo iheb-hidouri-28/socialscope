@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">🕒 User Activity Timeline</h2>
+<p class="text-muted">
+  This query retrieves all <strong>posts and comments</strong> made by a specific person from <strong>MongoDB</strong>, 
+  and displays them side by side.
+</p>
+
+<!-- Search Form -->
+<form method="get" action="/lookup/activity" class="row g-3 mb-4">
+  <div class="col-auto">
+    <input type="number" class="form-control" name="person_id" placeholder="Enter Person ID" required>
+  </div>
+  <div class="col-auto">
+    <button type="submit" class="btn btn-primary">Search</button>
+  </div>
+</form>
+
+<!-- Message -->
+{% if message %}
+  <div class="alert alert-warning">{{ message }}</div>
+{% endif %}
+
+<!-- Posts + Comments -->
+{% if activity %}
+  <h5>Activity for Person ID <strong>{{ person_id }}</strong></h5>
+  <div class="row">
+
+    <!-- 🔵 Posts -->
+    <div class="col-md-6">
+      <h6 class="mb-3">Posts</h6>
+      {% for item in activity if item.type == 'post' %}
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-1 text-muted">
+            ID: {{ item.id }} — {{ item.creationDate | datetimeformat }}
+          </h6>
+          <p class="card-text">
+            {% if item.content %}
+              {{ item.content }}
+            {% elif item.imageFile %}
+              <code>{{ item.imageFile }}</code>
+            {% else %}
+              <em>(no content)</em>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- 🟠 Comments -->
+    <div class="col-md-6">
+      <h6 class="mb-3">Comments</h6>
+      {% for item in activity if item.type == 'comment' %}
+      <div class="card mb-3 bg-light">
+        <div class="card-body">
+          <h6 class="card-subtitle mb-1 text-muted">
+            ID: {{ item.id }} — {{ item.creationDate | datetimeformat }}
+          </h6>
+          <p class="card-text">
+            {% if item.content %}
+              {{ item.content }}
+            {% else %}
+              <em>(no content)</em>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+{% endif %}
+{% endblock %}

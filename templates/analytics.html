@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">📊 Analytics Queries</h2>
+
+<div class="list-group">
+    <a href="/analytics/influencers" class="list-group-item list-group-item-action">
+        👑 Influencer Radar
+        <div class="small text-muted">Find the most connected people using Neo4j's KNOWS graph.</div>
+    </a>
+    <a href="/analytics/likes" class="list-group-item list-group-item-action">
+        ❤️ Like Leaderboard
+        <div class="small text-muted">See most-liked content using both Neo4j and MongoDB.</div>
+   
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">🔍 Lookup Queries</h2>
+
+<div class="list-group">
+   
+    <a href="/lookup/activity" class="list-group-item list-group-item-action">
+        🕒 User Activity Timeline
+        <div class="small text-muted">See all posts and comments from a user in time order.</div>
+    </a>
+    <a href="/lookup/forums" class="list-group-item list-group-item-action">
+        🧑‍🤝‍🧑 Forum Explorer
+        <div class="small text-muted">Explore forums a user is a member of using both databases.</div>
+    </a>
+    <a href="/lookup/network" class="list-group-item list-group-item-action">
+        🧑‍💼 Professional Network Explorer
+        <div class="small text-muted">See who studied or worked at the same org using Neo4j relationships.</div>
+    </a>
+</div>
+{% endblock %}

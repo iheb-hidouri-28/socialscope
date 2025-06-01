@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 class="mb-4">❤️ Like Leaderboard</h2>
+<p class="text-muted">
+  This query cross-references <strong>Neo4j</strong> and <strong>MongoDB</strong> to find the 
+  most liked <strong>posts and comments</strong>. It displays two ranked bar charts based on like count.
+</p>
+
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3" id="likeTabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab">📋 Data</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab">📊 Chart</button>
+  </li>
+</ul>
+
+<div class="tab-content" id="likeTabsContent">
+
+  <!-- 📋 Data Tab -->
+  <div class="tab-pane fade show active" id="data" role="tabpanel" aria-labelledby="data-tab">
+    {% if not topLikedPosts and not topLikedComments %}
+      <div class="alert alert-warning">No like data found in the graph or database.</div>
+    {% endif %}
+
+    <div class="row">
+      <!-- Posts -->
+      <div class="col-md-6">
+        <h4>Top Liked Posts</h4>
+        {% for post in topLikedPosts %}
+        <div class="card mb-3">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted">Post ID: {{ post.id }} — Likes: {{ post.likes }}</h6>
+            <p class="card-text"><p class="card-text">{% if post.content %}{{ post.content }}{% elif post.imageFile %}<code>{{ post.imageFile }}</code>{% else %}<em>(no content)</em>{% endif %}</p>
+            <p class="card-text"><small class="text-muted">By {{ post.creatorName or ("Person " ~ post.creator) }} on {{ post.created | datetimeformat }}</small></p>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Comments -->
+      <div class="col-md-6">
+        <h4>Top Liked Comments</h4>
+        {% for comment in topLikedComments %}
+        <div class="card mb-3 bg-light">
+          <div class="card-body">
+            <h6 class="card-subtitle mb-1 text-muted">Comment ID: {{ comment.id }} — Likes: {{ comment.likes }}</h6>
+            <p class="card-text">{{ comment.content or "(no content)" }}</p>
+            <p class="card-text"><small class="text-muted">By {{ comment.creatorName or ("Person " ~ comment.creator) }} on {{ comment.created | datetimeformat }}</small></p>
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 📊 Chart Tab -->
+  <div class="tab-pane fade" id="chart" role="tabpanel" aria-labelledby="chart-tab">
+    <div class="row mt-4">
+      <!-- Posts Chart -->
+      <div class="col-md-6">
+        <h5>Most Liked Posts</h5>
+        <canvas
+          id="postsChart"
+          height="120"
+          data-labels='{{ topLikedPosts | map(attribute="id") | list | tojson | safe }}'
+          data-values='{{ topLikedPosts | map(attribute="likes") | list | tojson | safe }}'>
+        </canvas>
+      </div>
+
+      <!-- Comments Chart -->
+      <div class="col-md-6">
+        <h5>Most Liked Comments</h5>
+        <canvas
+          id="commentsChart"
+          height="120"
+          data-labels='{{ topLikedComments | map(attribute="id") | list | tojson | safe }}'
+          data-values='{{ topLikedComments | map(attribute="likes") | list | tojson | safe }}'>
+        </canvas>
+      </div>
+    </div>
+
+    <!-- Chart.js setup -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const setupChart = (canvasId) => {
+          const canvas = document.getElementById(canvasId);
+          if (!canvas) return;
+          const labels = JSON.parse(canvas.dataset.labels || "[]");
+          const values = JSON.parse(canvas.dataset.values || "[]");
+
+          new Chart(canvas.getContext("2d"), {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Likes',
+                data: values,
+                backgroundColor: '#FF4C4C',
+                borderRadius: 4
+              }]
+            },
+            options: {
+              plugins: {
+                legend: { display: false },
+                title: {
+                  display: true,
+                  text: canvasId === 'postsChart' ? 'Top Liked Posts' : 'Top Liked Comments'
+                }
+              },
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        };
+
+        setupChart("postsChart");
+        setupChart("commentsChart");
+      });
+    </script>
+  </div>
+</div>
+{% endblock %}
